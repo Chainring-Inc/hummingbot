@@ -263,6 +263,7 @@ class ChainringExchange(ExchangePyBase):
         side_str = CONSTANTS.SIDE_BUY if trade_type is TradeType.BUY else CONSTANTS.SIDE_SELL
 
         api_params = {
+            "clientOrderId": order_id,
             "marketId": market_id,
             "type": type_str,
             "side": side_str,
@@ -326,7 +327,7 @@ class ChainringExchange(ExchangePyBase):
 
     async def _request_order_status(self, tracked_order: InFlightOrder) -> OrderUpdate:
         order = await self._api_get(
-            path_url=f"{CONSTANTS.ORDER_PATH_URL}/{tracked_order.exchange_order_id}",
+            path_url=f"{CONSTANTS.ORDER_PATH_URL}/external:{tracked_order.client_order_id}",
             is_auth_required=True,
             limit_id=CONSTANTS.ALL_HTTP)
 
@@ -430,7 +431,7 @@ class ChainringExchange(ExchangePyBase):
 
     async def _all_trade_updates_for_order(self, order: InFlightOrder) -> List[TradeUpdate]:
         exchange_order = await self._api_get(
-            path_url=f"{CONSTANTS.ORDER_PATH_URL}/{order.exchange_order_id}",
+            path_url=f"{CONSTANTS.ORDER_PATH_URL}/external:{order.client_order_id}",
             is_auth_required=True,
             limit_id=CONSTANTS.ALL_HTTP)
         executions = exchange_order["executions"]

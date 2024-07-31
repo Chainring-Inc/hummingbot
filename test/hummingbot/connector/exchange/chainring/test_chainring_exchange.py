@@ -1511,7 +1511,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = self._order_status_request_completely_filled_mock_response(order=order)
         mock_api.get(url, status=200, body=json.dumps(response), callback=callback, repeat=True)
         return url
@@ -1521,7 +1521,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = self._order_status_request_canceled_mock_response(order=order)
         mock_api.get(url, status=200, body=json.dumps(response), callback=callback, repeat=True)
         return url
@@ -1531,7 +1531,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         mock_api.get(url, status=500, body=json.dumps({}), callback=callback, repeat=False)
         return url
 
@@ -1540,7 +1540,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = self._order_status_request_open_mock_response(order=order)
         mock_api.get(url, status=200, body=json.dumps(response), callback=callback, repeat=True)
         return url
@@ -1550,7 +1550,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = self._order_status_request_open_mock_response(order=order)
         mock_api.get(url, status=401, body=json.dumps(response), callback=callback, repeat=True)
         return url
@@ -1560,7 +1560,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
             order: InFlightOrder,
             mock_api: aioresponses,
             callback: Optional[Callable] = lambda *args, **kwargs: None) -> str:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = self._order_status_request_partially_filled_mock_response(order=order)
         mock_api.get(url, status=200, body=json.dumps(response), callback=callback, repeat=True)
         return url
@@ -1568,7 +1568,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
     def configure_order_not_found_error_order_status_response(
             self, order: InFlightOrder, mock_api: aioresponses, callback: Optional[Callable] = lambda *args, **kwargs: None
     ) -> List[str]:
-        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/" + order.exchange_order_id
+        url = web_utils.private_rest_url(CONSTANTS.ORDER_PATH_URL) + "/external:" + order.client_order_id
         response = {"errors": [{"reason": CONSTANTS.ERROR_CODE_ORDER_NOT_FOUND, "message": "Requested order does not exist"}]}
         mock_api.get(url, status=404, body=json.dumps(response), callback=callback, repeat=True)
         return [url]
