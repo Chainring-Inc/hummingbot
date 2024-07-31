@@ -9,7 +9,11 @@ from aioresponses.core import RequestCall
 
 from hummingbot.client.config.client_config_map import ClientConfigMap
 from hummingbot.client.config.config_helpers import ClientConfigAdapter
-from hummingbot.connector.exchange.chainring import chainring_constants as CONSTANTS, chainring_web_utils as web_utils
+from hummingbot.connector.exchange.chainring import (
+    chainring_constants as CONSTANTS,
+    chainring_utils,
+    chainring_web_utils as web_utils,
+)
 from hummingbot.connector.exchange.chainring.chainring_exchange import ChainringExchange
 from hummingbot.connector.test_support.exchange_connector_test import AbstractExchangeConnectorTests
 from hummingbot.connector.trading_rule import TradingRule
@@ -392,14 +396,17 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
 
     @property
     def expected_trading_rule(self):
+        min_fee = Decimal(self.trading_rules_request_mock_response["markets"][0]["minFee"])
+        maker_fee_rate = Decimal(self.trading_rules_request_mock_response["feeRates"]["maker"]) / 1000000
+        base_decimals = self.trading_rules_request_mock_response["markets"][0]["baseDecimals"]
+        quote_decimals = self.trading_rules_request_mock_response["markets"][0]["quoteDecimals"]
+
         return TradingRule(
             trading_pair=self.trading_pair,
-            min_price_increment=Decimal(
-                self.trading_rules_request_mock_response["markets"][0]["tickSize"]),
-            min_base_amount_increment=
-            (Decimal(1) / Decimal("1e" + str(self.trading_rules_request_mock_response["markets"][0]["baseDecimals"]))),
-            min_quote_amount_increment=
-            (Decimal(1) / Decimal("1e" + str(self.trading_rules_request_mock_response["markets"][0]["quoteDecimals"]))),
+            min_price_increment=Decimal(self.trading_rules_request_mock_response["markets"][0]["tickSize"]),
+            min_base_amount_increment= (Decimal(1) / Decimal("1e" + str(base_decimals))),
+            min_quote_amount_increment=(Decimal(1) / Decimal("1e" + str(quote_decimals))),
+            min_notional_size=chainring_utils.move_point_left(min_fee / maker_fee_rate, quote_decimals)
         )
 
     @property
@@ -1745,7 +1752,7 @@ class ChainringExchangeTests(AbstractExchangeConnectorTests.ExchangeConnectorTes
         self.assertEqual(btc_btc.min_price_increment, Decimal("0.001"))
         self.assertEqual(btc_btc.min_base_amount_increment, Decimal("1E-18"))
         self.assertEqual(btc_btc.min_quote_amount_increment, Decimal("1E-18"))
-        self.assertEqual(btc_btc.min_notional_size, Decimal("0"))
+        self.assertEqual(btc_btc.min_notional_size, Decimal("0.05"))
         self.assertEqual(btc_btc.min_order_value, Decimal("0"))
         self.assertEqual(btc_btc.max_price_significant_digits, Decimal("1E+56"))
         self.assertEqual(btc_btc.supports_limit_orders, True)

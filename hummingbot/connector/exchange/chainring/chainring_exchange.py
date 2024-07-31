@@ -137,15 +137,19 @@ class ChainringExchange(ExchangePyBase):
         """
         retval = []
         if chainring_utils.is_exchange_information_valid(exchange_info_dict):
+            maker_fee_rate = Decimal(exchange_info_dict["feeRates"]["maker"]) / 1000000
             markets = exchange_info_dict.get("markets", [])
+
             for market in markets:
                 try:
+                    quote_decimals = market["quoteDecimals"]
                     retval.append(
                         TradingRule(
                             trading_pair=await self.trading_pair_associated_to_exchange_symbol(symbol=market.get("id")),
                             min_price_increment=Decimal(market["tickSize"]),
                             min_base_amount_increment=(Decimal(1) / Decimal("1e" + str(market["baseDecimals"]))),
-                            min_quote_amount_increment=(Decimal(1) / Decimal("1e" + str(market["quoteDecimals"])))
+                            min_quote_amount_increment=(Decimal(1) / Decimal("1e" + str(quote_decimals))),
+                            min_notional_size=chainring_utils.move_point_left(Decimal(market["minFee"]) / maker_fee_rate, quote_decimals)
                         )
                     )
                 except Exception:
@@ -319,8 +323,6 @@ class ChainringExchange(ExchangePyBase):
             if isinstance(e, ContentTypeError):
                 #  aiohttp seems not able to handle 204 NoContent response
                 return True
-            # if self._is_order_not_found_during_cancelation_error(e):
-            #     return True
             raise
 
         return True
